@@ -7,3 +7,7 @@
 
 - pendulum_nonlinear.py
 - rigid_simulator_implicit.py
+
+## Project 3: Liouville's theorem demo
+
+- dist_dynamic.py
