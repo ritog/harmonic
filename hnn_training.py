@@ -13,30 +13,28 @@ init_states = (
 hnn_model = HNN().to(device)
 
 
-def get_time_derivatives(model, x):
-    grads_ls = []
-    for qp_pair in x:
-        h_hat = model(qp_pair)
-        grads = torch.autograd.grad(h_hat, qp_pair, create_graph=True)
-        grads_ls.append(grads)
-    return grads_ls
-
-
-h_hats = get_time_derivatives(hnn_model, init_states)
-print(h_hats)
-
-
-def get_deriv_pairs(h_hats):
+def get_model_time_derivatives(model, x):
     """
-    Gets the pairs of [dq_dt, dp_dt]
+    Compute time derivatives [dq/dt, dp/dt] for a batch of inputs.
+    x: Tensor of shape (Batch_Size, 2)
     """
-    deriv_pairs = []
-    for h_hat in h_hats:
-        dpdq = h_hat[0] * torch.tensor([-1.0, 1.0]).to("cuda")
-        dqdp = torch.flip(dpdq, dims=[0])
-        deriv_pairs.append(dqdp)
-    return deriv_pairs
+    H_hat = model(x)
+
+    # We sum() the energy to get a scalar, but because samples are independent,
+    # the gradients separate out perfectly per row.
+    grads = torch.autograd.grad(H_hat.sum(), x, create_graph=True)[0]
+
+    # grads shape: (Batch, 2) -> [dH/dq, dH/dp]
+
+    # flipping (Symplectic Swap (Hamilton's Eqs))
+    # dq/dt =  dH/dp
+    # dp/dt = -dH/dq
+
+    dH_dq = grads[:, 0].unsqueeze(1)
+    dH_dp = grads[:, 1].unsqueeze(1)
+
+    return torch.cat([dH_dp, -dH_dq], dim=1)  # - because minus
 
 
-deriv_pairs = get_deriv_pairs(h_hats)
+deriv_pairs = get_model_time_derivatives(hnn_model, init_states)
 print(deriv_pairs)
