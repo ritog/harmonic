@@ -1,40 +1,37 @@
 import torch
+from tqdm import tqdm
 
 from HNN import HNN
+from hnn_model_derivs import get_model_time_derivatives
+from pendulum_tensor import pendulum_dynamics_tensor
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-mean = torch.tensor([0.0, 2.0])
+# params
+m = 1.0  # mass
+l = 1.0  # length of rod
+dt = 0.05  # time-step
+g = 9.8  # gravitational acceleration
+
+mean = torch.tensor([-3.0, 3.0])
 std = 0.1
-init_states = (
-    torch.normal(mean=mean.expand(100, 2), std=std).to(device).requires_grad_()
-)
+init_states = (6 * torch.rand(1_000, 2) - 3).to(device).requires_grad_()
 
-hnn_model = HNN().to(device)
+true_derivatives = pendulum_dynamics_tensor(t=dt, state=init_states, m=m, l=l, g=g)
 
+hamiltonian_nn = HNN().to(device)
+loss_func = torch.nn.MSELoss()
+optimizer = torch.optim.Adam(hamiltonian_nn.parameters(), lr=1e-2)
 
-def get_model_time_derivatives(model, x):
-    """
-    Compute time derivatives [dq/dt, dp/dt] for a batch of inputs.
-    x: Tensor of shape (Batch_Size, 2)
-    """
-    H_hat = model(x)
+n_epochs = 1_200
 
-    # sum the energy to get a scalar,
-    # the gradients separate out perfectly per row
-    grads = torch.autograd.grad(H_hat.sum(), x, create_graph=True)[0]
+for epoch in tqdm(range(n_epochs + 1)):
+    deriv_pred = get_model_time_derivatives(hamiltonian_nn, init_states)
+    loss = loss_func(deriv_pred, true_derivatives)
 
-    # grads shape: (Batch, 2) -> [dH/dq, dH/dp]
+    optimizer.zero_grad()
+    loss.backward(retain_graph=True)
 
-    # flipping (Symplectic Swap (Hamilton's Eqs))
-    # dq/dt =  dH/dp
-    # dp/dt = -dH/dq
-
-    dH_dq = grads[:, 0].unsqueeze(1)
-    dH_dp = grads[:, 1].unsqueeze(1)
-
-    return torch.cat([dH_dp, -dH_dq], dim=1)  # - because minus
-
-
-deriv_pairs = get_model_time_derivatives(hnn_model, init_states)
-print(deriv_pairs)
+    optimizer.step()
+    if epoch % 100 == 0:
+        print(f"Epoch: {epoch}\t Loss: {loss}")
