@@ -15,5 +15,3 @@ std = 0.1
 init_states = (6 * torch.rand(1_000, 2) - 3).to(device).requires_grad_()
 
 true_derivatives = pendulum_dynamics_tensor(t=dt, state=init_states, m=m, l=l, g=g)
-print(init_states)
-print(true_derivatives)
