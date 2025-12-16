@@ -20,8 +20,8 @@ def get_model_time_derivatives(model, x):
     """
     H_hat = model(x)
 
-    # We sum() the energy to get a scalar, but because samples are independent,
-    # the gradients separate out perfectly per row.
+    # sum the energy to get a scalar,
+    # the gradients separate out perfectly per row
     grads = torch.autograd.grad(H_hat.sum(), x, create_graph=True)[0]
 
     # grads shape: (Batch, 2) -> [dH/dq, dH/dp]
