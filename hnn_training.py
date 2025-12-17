@@ -35,3 +35,5 @@ for epoch in tqdm(range(n_epochs + 1)):
     optimizer.step()
     if epoch % 100 == 0:
         print(f"Epoch: {epoch}\t Loss: {loss}")
+
+torch.save(hamiltonian_nn.state_dict(), "hamiltonian_nn_1.pth")
