@@ -1,3 +1,5 @@
+# Here we generate the true dynamics of the system using
+# a solver (Euler)
 import numpy as np
 from matplotlib import pyplot as plt
 

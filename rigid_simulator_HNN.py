@@ -1,3 +1,5 @@
+# Here, we have an already trained HNN
+# We use it to plot trajectory
 import torch
 from matplotlib import pyplot as plt
 
