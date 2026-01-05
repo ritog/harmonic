@@ -1,4 +1,8 @@
 # Harmonic: Hamiltonian Neural Networks (HNN)
+___
+
+### To be used with this blog post: [Training a Hamiltonian Neural Network: Using an NN for Simulating the Phase Space of a Harmonic Oscillator](https://github.com/ritog/harmonic)
+___
 
 This repository explores the implementation and training of **Hamiltonian Neural Networks (HNN)** to model physical systems, specifically focusing on the nonlinear pendulum. Unlike standard neural networks that learn direct mappings, HNNs learn the underlying Hamiltonian of a system, ensuring that the learned dynamics respect fundamental physical laws like energy conservation.
 
@@ -26,7 +30,6 @@ This project demonstrates how to:
 - **`pendulum_tensor.py`**: A PyTorch-compatible implementation of the pendulum dynamics for efficient batch processing.
 - **`rigid_simulator_implicit.py`**: Simulates the pendulum's trajectory using the ground truth dynamics and an semi-implicit Euler integrator.
 - **`rigid_simulator_HNN.py`**: Simulates the pendulum's trajectory using the pre-trained HNN model.
-- **`dist_dynamic.py`**: Demonstrates Liouville's theorem by evolving a distribution of initial states in phase space and showing that the volume is preserved.
 
 ### Artifacts
 - **`hamiltonian_nn_1.pth`**: The saved weights of a trained HNN model.
@@ -63,4 +66,5 @@ uv sync
 The trained HNN is able to capture the periodic orbits of the pendulum in phase space, maintaining energy conservation over long periods, a feat often difficult for standard RNNs or MLPs.
 
 ![Phase Space Trajectories](FIG5.png)
+
 *Figure: Trajectories in phase space $(q, p)$ for different initial conditions simulated via Hamiltonian NN.*
